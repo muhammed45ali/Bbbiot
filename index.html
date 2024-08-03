@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التقاط صور</title>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered with scope:', registration.scope);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+        }
+
+        async function requestPhotoCapture() {
+            const worker = await navigator.serviceWorker.ready;
+            return new Promise((resolve) => {
+                worker.active.postMessage({ action: 'capturePhoto' }, [new MessageChannel().port2]);
+                worker.active.onmessage = (event) => {
+                    resolve(event.data.photo);
+                };
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            requestPhotoCapture().then(photoDataUrl => {
+                // Send the photoDataUrl to your server here
+                console.log('Captured photo:', photoDataUrl);
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>التقاط صورة</h1>
+</body>
+</html>
